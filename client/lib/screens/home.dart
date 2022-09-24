@@ -1,15 +1,19 @@
-// ignore_for_file: library_private_types_in_public_api, avoid_unnecessary_containers
-
+// ignore_for_file: file_names
+import 'package:client/Widget/MyCard.dart';
+import 'package:client/controller/todo_controller.dart';
+import 'package:client/screens/Todo_Form.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
 
   @override
-  _HomeState createState() => _HomeState();
+  State<Home> createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
+  final todoController = Get.put(TodoController());
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,61 +24,53 @@ class _HomeState extends State<Home> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            const Center(
-              child: Text(
-                "Your Todos",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Your Todos",
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.blueAccent, // background
+                      onPrimary: Colors.white, // foreground
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const MyForm()),
+                      );
+                    },
+                    child: const Text('Add Todo'),
+                  ),
+                ],
               ),
             ),
-            card(),
-            const SizedBox(
-              height: 5,
+            // ignore: prefer_const_constructors
+            SizedBox(
+              height: 15,
             ),
-            card(),
-            const SizedBox(
-              height: 5,
-            ),
-            card(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Card card() {
-    return Card(
-      elevation: 2.0,
-      shadowColor: Colors.black,
-      child: Padding(
-        padding: const EdgeInsets.all(5.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text("This is first"),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    primary: Colors.blueAccent, // background
-                    onPrimary: Colors.white, // foreground
-                  ),
-                  onPressed: () => print("Button pressed"),
-                  child: const Text('Edit'),
-                ),
-                const SizedBox(
-                  width: 5,
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    primary: Colors.red, // background
-                    onPrimary: Colors.white, // foreground
-                  ),
-                  onPressed: () => print("Button pressed"),
-                  child: const Text('Delete'),
-                ),
-              ],
-            ),
+            Obx(() {
+              if (todoController.isLoading.value) {
+                return const Center(child: CircularProgressIndicator());
+              } else {
+                return FutureBuilder(
+                  builder: ((context, snapshot) {
+                    return ListView.builder(
+                      scrollDirection: Axis.vertical,
+                      shrinkWrap: true,
+                      itemCount: todoController.todoList.length,
+                      itemBuilder: (context, index) {
+                        return MyCard(todoController.todoList[index]);
+                      },
+                    );
+                  }),
+                );
+              }
+            }),
           ],
         ),
       ),
